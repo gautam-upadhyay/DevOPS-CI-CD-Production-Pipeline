@@ -2,9 +2,11 @@ name: DevOps CI Pipeline
 
 on:
 push:
-branches: [ "main" ]
+branches:
+- main
 pull_request:
-branches: [ "main" ]
+branches:
+- main
 
 jobs:
 build:
@@ -12,21 +14,21 @@ runs-on: ubuntu-latest
 
 ```
 steps:
-  - name: Checkout Repository
+  - name: Checkout repository
     uses: actions/checkout@v4
 
-  - name: Show Project Structure
+  - name: Show project structure
     run: ls -R
 
-  - name: Validate HTML File
+  - name: Validate HTML file
     run: |
       if [ ! -f app/index.html ]; then
-        echo "Error: index.html not found!"
+        echo "index.html not found!"
         exit 1
       fi
-      echo "HTML file exists. Validation passed."
+      echo "HTML file exists."
 
-  - name: Upload Website Artifact
+  - name: Upload artifact
     uses: actions/upload-artifact@v4
     with:
       name: website-files
