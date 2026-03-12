@@ -1,28 +1,34 @@
-name: DevOps CI/CD Pipeline
+name: DevOps CI Pipeline
 
 on:
-  push:
-    branches:
-      - main
+push:
+branches: [ "main" ]
+pull_request:
+branches: [ "main" ]
 
 jobs:
-  build-deploy:
-    runs-on: ubuntu-latest
+build:
+runs-on: ubuntu-latest
 
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
+```
+steps:
+  - name: Checkout Repository
+    uses: actions/checkout@v4
 
-    - name: Set up Docker
-      uses: docker/setup-buildx-action@v2
+  - name: Show Project Structure
+    run: ls -R
 
-    - name: Build Docker Image
-      run: docker build -t devops-lab-app ./app
+  - name: Validate HTML File
+    run: |
+      if [ ! -f app/index.html ]; then
+        echo "Error: index.html not found!"
+        exit 1
+      fi
+      echo "HTML file exists. Validation passed."
 
-    - name: Set up kubectl
-      uses: azure/setup-kubectl@v3
-
-    - name: Deploy to Kubernetes
-      run: |
-        kubectl apply -f k8s/deployment.yml
-        kubectl apply -f k8s/service.yml
+  - name: Upload Website Artifact
+    uses: actions/upload-artifact@v4
+    with:
+      name: website-files
+      path: app/
+```
