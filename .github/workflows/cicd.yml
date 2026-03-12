@@ -1,36 +1,50 @@
-name: DevOps CI Pipeline
+name: Static Site CI/CD
 
 on:
-push:
-branches:
-- main
-pull_request:
-branches:
-- main
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
 
 jobs:
-build:
-runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest
 
-```
-steps:
-  - name: Checkout repository
-    uses: actions/checkout@v4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-  - name: Show project structure
-    run: ls -R
+      - name: Validate static site files
+        shell: bash
+        run: |
+          test -f app/index.html
 
-  - name: Validate HTML file
-    run: |
-      if [ ! -f app/index.html ]; then
-        echo "index.html not found!"
-        exit 1
-      fi
-      echo "HTML file exists."
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
 
-  - name: Upload artifact
-    uses: actions/upload-artifact@v4
-    with:
-      name: website-files
-      path: app/
-```
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: app
+
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
